@@ -1,0 +1,43 @@
+# main ブランチに push すると、自動で GitHub Pages に公開します。
+# （Settings 画面での手動設定は不要。configure-pages が Pages を自動で有効化します）
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:      # 手動実行も可能
+
+# GitHub Pages への公開に必要な権限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時に走らないように（最新の1本だけ通す）
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: リポジトリを取得
+        uses: actions/checkout@v4
+
+      - name: Pages を準備（無効なら自動で有効化）
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: サイト一式をアップロード
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'          # リポジトリ直下（index.html がある場所）
+
+      - name: Pages へ公開
+        id: deployment
+        uses: actions/deploy-pages@v4

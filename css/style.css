@@ -1,0 +1,299 @@
+/* =========================================================
+   クイックタスク — スタイルシート
+   デザイン方針：見やすさ最優先
+   （大きめの文字・高コントラスト・すっきりしたレイアウト）
+   ライト / ダーク 両対応。
+   ========================================================= */
+
+/* ---- デザイントークン（色・角丸・影などの「変数」）----
+   ここの値を変えるだけで全体の見た目を調整できます。 */
+:root {
+  color-scheme: light;
+
+  --bg: #f3f5f9;          /* 背景 */
+  --surface: #ffffff;     /* カードなどの面 */
+  --surface-2: #eef1f7;   /* うっすら区別したい面 */
+  --ink: #15202b;         /* 文字（濃い＝高コントラスト）*/
+  --ink-muted: #566275;   /* 補足の文字 */
+  --line: #dbe1ea;        /* 枠線 */
+
+  --accent: #2360d9;      /* 主役の色（ボタンなど）*/
+  --accent-strong: #1a4bb0;
+  --accent-ink: #ffffff;  /* accent の上に乗る文字 */
+  --accent-soft: #e7efff;
+
+  --danger: #c02b32;      /* 期限切れ・削除 */
+  --danger-soft: #fdecec;
+
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow: 0 1px 2px rgba(20, 32, 43, .06), 0 6px 20px rgba(20, 32, 43, .06);
+  --focus: 0 0 0 3px rgba(35, 96, 217, .45);
+
+  --font: "Noto Sans JP", -apple-system, BlinkMacSystemFont,
+          "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+}
+
+/* OSがダーク設定の人向け（明示的にライト指定がある場合を除く）*/
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0e141c;
+    --surface: #17202b;
+    --surface-2: #1f2a37;
+    --ink: #eef3f9;
+    --ink-muted: #9fadbf;
+    --line: #2c3947;
+    --accent: #4d8bf5;
+    --accent-strong: #6ba2ff;
+    --accent-ink: #08111c;
+    --accent-soft: #17293f;
+    --danger: #ff6b6b;
+    --danger-soft: #3a1e20;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    --focus: 0 0 0 3px rgba(109, 162, 255, .5);
+  }
+}
+/* トグルなどで明示的にダークにした場合 */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e141c;
+  --surface: #17202b;
+  --surface-2: #1f2a37;
+  --ink: #eef3f9;
+  --ink-muted: #9fadbf;
+  --line: #2c3947;
+  --accent: #4d8bf5;
+  --accent-strong: #6ba2ff;
+  --accent-ink: #08111c;
+  --accent-soft: #17293f;
+  --danger: #ff6b6b;
+  --danger-soft: #3a1e20;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  --focus: 0 0 0 3px rgba(109, 162, 255, .5);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 17px;      /* 少し大きめの基準サイズ */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { text-wrap: balance; }
+
+/* キーボード操作時、今どこにいるかをはっきり見せる */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-radius: 6px;
+}
+
+/* 画面には表示しないが、読み上げには使う要素 */
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Tabキーで最初に出る「本文へスキップ」リンク */
+.skip-link {
+  position: absolute; left: 12px; top: -60px;
+  background: var(--accent); color: var(--accent-ink);
+  padding: 10px 16px; border-radius: var(--radius-sm);
+  z-index: 100; font-weight: 700; transition: top .15s ease;
+}
+.skip-link:focus { top: 12px; }
+
+.app {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px 18px 64px;
+}
+
+/* ---- ヘッダー ---- */
+.app-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 22px;
+}
+.app-title {
+  margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: .01em;
+}
+.app-title::before { content: "✓ "; color: var(--accent); }
+
+/* ---- ボタン共通 ---- */
+.btn-primary, .btn-ghost {
+  font-family: inherit; font-size: 1rem; font-weight: 700;
+  min-height: 48px; padding: 0 20px; border-radius: var(--radius-sm);
+  cursor: pointer; border: 1.5px solid transparent;
+  transition: background .12s, border-color .12s;
+}
+.btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-ghost { background: var(--surface); color: var(--ink); border-color: var(--line); }
+.btn-ghost:hover { background: var(--surface-2); }
+
+/* ---- カード ---- */
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px;
+}
+.add-card { margin-bottom: 22px; }
+
+.section-label {
+  margin: 0 0 12px; font-size: .82rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em; color: var(--ink-muted);
+}
+
+/* ---- 入力フォーム ---- */
+.add-form { display: flex; flex-direction: column; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-label { font-size: .9rem; font-weight: 500; color: var(--ink-muted); }
+.field-hint { margin: 2px 0 0; font-size: .82rem; color: var(--ink-muted); }
+
+.input {
+  font-family: inherit; font-size: 1.05rem; color: var(--ink);
+  background: var(--surface); border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm); padding: 12px 14px; min-height: 48px;
+  width: 100%; transition: border-color .12s;
+}
+.input:hover { border-color: var(--ink-muted); }
+.input:focus-visible { border-color: var(--accent); box-shadow: var(--focus); }
+.input-title { font-size: 1.15rem; }
+
+.add-form-row {
+  display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end;
+}
+.field-submit { align-self: end; }
+.field-submit .btn-primary { width: 100%; }
+
+/* スマホ幅では縦積みに */
+@media (max-width: 520px) {
+  .add-form-row { grid-template-columns: 1fr 1fr; }
+  .field-submit { grid-column: 1 / -1; }
+}
+
+/* ---- フィルタ（ジャンル絞り込み）---- */
+.filters { margin-bottom: 16px; }
+.filters-scroll {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin;
+}
+.filter-tab {
+  font-family: inherit; font-size: .95rem; font-weight: 600; white-space: nowrap;
+  min-height: 42px; padding: 0 16px; border-radius: 999px; cursor: pointer;
+  background: var(--surface); color: var(--ink-muted); border: 1.5px solid var(--line);
+  transition: background .12s, border-color .12s, color .12s;
+}
+.filter-tab:hover { color: var(--ink); border-color: var(--ink-muted); }
+.filter-tab[aria-pressed="true"] {
+  background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+}
+
+/* ---- 一覧の見出し ---- */
+.list-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin: 4px 2px 12px;
+}
+.list-head .section-label { margin: 0; }
+.count { font-size: .9rem; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+
+/* ---- タスク一覧 ---- */
+.task-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+
+.task {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-left: 4px solid var(--line); border-radius: var(--radius);
+  padding: 16px; box-shadow: var(--shadow);
+}
+.task.is-overdue { border-left-color: var(--danger); }  /* 色だけでなく左帯でも示す */
+.task.is-done { opacity: .62; }
+
+/* 大きめで押しやすいチェックボックス */
+.task-check {
+  appearance: none; -webkit-appearance: none;
+  width: 26px; height: 26px; margin-top: 2px; flex: 0 0 auto;
+  border: 2px solid var(--ink-muted); border-radius: 7px;
+  background: var(--surface); cursor: pointer; position: relative;
+  transition: background .12s, border-color .12s;
+}
+.task-check:hover { border-color: var(--accent); }
+.task-check:checked { background: var(--accent); border-color: var(--accent); }
+.task-check:checked::after {
+  content: ""; position: absolute; left: 8px; top: 3px;
+  width: 6px; height: 12px; border: solid var(--accent-ink);
+  border-width: 0 3px 3px 0; transform: rotate(45deg);
+}
+.task-check:focus-visible { box-shadow: var(--focus); }
+
+.task-main {
+  flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px; cursor: pointer;
+}
+.task-title { font-size: 1.12rem; font-weight: 600; color: var(--ink); word-break: break-word; }
+.is-done .task-title { text-decoration: line-through; color: var(--ink-muted); }
+
+.task-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.chip {
+  font-size: .82rem; font-weight: 600; color: var(--ink-muted);
+  background: var(--surface-2); padding: 3px 10px; border-radius: 999px;
+}
+.due { font-size: .9rem; font-weight: 600; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.due-today, .due-soon { color: var(--accent-strong); }
+.due-overdue { color: var(--danger); font-weight: 700; }
+.is-done .due-overdue { color: var(--ink-muted); font-weight: 600; }
+
+.task-delete {
+  flex: 0 0 auto; font-family: inherit; font-size: .88rem; font-weight: 600;
+  color: var(--ink-muted); background: transparent; border: 1.5px solid transparent;
+  border-radius: var(--radius-sm); padding: 8px 12px; min-height: 40px; cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.task-delete:hover { color: var(--danger); background: var(--danger-soft); }
+
+.empty {
+  text-align: center; color: var(--ink-muted); font-size: 1rem;
+  padding: 40px 20px; border: 1.5px dashed var(--line); border-radius: var(--radius);
+}
+
+/* ---- ジャンル管理ダイアログ ---- */
+.dialog {
+  border: none; border-radius: var(--radius); padding: 0;
+  width: min(440px, calc(100vw - 32px)); color: var(--ink); background: var(--surface);
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+.dialog::backdrop { background: rgba(10, 16, 24, .55); }
+.dialog-inner { padding: 22px; }
+.dialog-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.dialog-head h2 { margin: 0; font-size: 1.2rem; }
+.btn-icon {
+  font-size: 1.1rem; line-height: 1; background: transparent; border: none;
+  color: var(--ink-muted); cursor: pointer; padding: 8px; border-radius: 8px;
+  min-height: 40px; min-width: 40px;
+}
+.btn-icon:hover { background: var(--surface-2); color: var(--ink); }
+.cat-add-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.cat-add-row .input { flex: 1 1 auto; }
+.cat-add-row .btn-primary { flex: 0 0 auto; padding: 0 18px; }
+.cat-list {
+  list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column;
+  gap: 8px; max-height: 46vh; overflow-y: auto;
+}
+.cat-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface-2); border-radius: var(--radius-sm); padding: 10px 14px; font-weight: 600;
+}
+.cat-delete {
+  font-family: inherit; font-size: .85rem; font-weight: 600; color: var(--danger);
+  background: transparent; border: none; cursor: pointer; padding: 6px 10px; border-radius: 7px;
+}
+.cat-delete:hover { background: var(--danger-soft); }
+
+/* 「動きを減らす」設定の人にはアニメを止める */
+@media (prefers-reduced-motion: reduce) {
+  *, .skip-link { transition: none !important; }
+}
