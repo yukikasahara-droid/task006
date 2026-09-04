@@ -297,3 +297,65 @@ h1, h2, h3 { text-wrap: balance; }
 @media (prefers-reduced-motion: reduce) {
   *, .skip-link { transition: none !important; }
 }
+
+/* =========================================================
+   追加分：スマホのタイトル最適化・削除時のフォーカス・備考（メモ）機能
+   ========================================================= */
+
+/* hidden属性を確実に効かせる（.field 等の display 指定に負けないように）。
+   これがないと「＋備考」を押す前から備考欄が開いて見えてしまう。 */
+[hidden] { display: none !important; }
+
+/* --- タイトル：折り返さず1行に。狭い画面では「TASK」に切り替え --- */
+.app-title { white-space: nowrap; }
+.app-title .title-short { display: none; }
+@media (max-width: 480px) {
+  .app-title .title-full { display: none; }
+  .app-title .title-short { display: inline; letter-spacing: .14em; }
+}
+
+/* --- 削除後にフォーカスを移す見出し：枠（フォーカスリング）は出さない --- */
+#list-heading { outline: none; }
+#list-heading:focus,
+#list-heading:focus-visible { box-shadow: none; }
+
+/* --- 追加フォームの「＋ 備考（任意）」トグル --- */
+.field-note-toggle { margin-top: -4px; }
+.btn-note-toggle {
+  align-self: flex-start; font-family: inherit; font-size: .92rem; font-weight: 600;
+  color: var(--accent-strong); background: transparent; border: none;
+  padding: 6px 2px; min-height: 40px; cursor: pointer;
+}
+.btn-note-toggle:hover { text-decoration: underline; }
+.input-note { resize: vertical; min-height: 64px; line-height: 1.5; }
+
+/* --- タスク本文と操作ボタン（備考ボタンを追加） --- */
+.task-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.task-main { flex: 0 0 auto; }
+.task-actions { flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+
+.task-note-btn {
+  font-family: inherit; font-size: .85rem; font-weight: 600; white-space: nowrap;
+  color: var(--accent-strong); background: transparent; border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm); padding: 7px 10px; min-height: 38px; cursor: pointer;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.task-note-btn:hover,
+.task-note-btn[aria-expanded="true"] { background: var(--accent-soft); border-color: var(--accent); }
+
+/* --- 備考の表示（書いてあるときだけ出す） --- */
+.task-note {
+  margin: 0; font-size: .95rem; line-height: 1.55; color: var(--ink);
+  background: var(--surface-2); border-left: 3px solid var(--line);
+  border-radius: 8px; padding: 8px 12px; white-space: pre-wrap; word-break: break-word;
+}
+.is-done .task-note { color: var(--ink-muted); }
+
+/* --- 備考の編集欄（「備考」ボタンで開閉） --- */
+.task-note-edit {
+  font-family: inherit; font-size: .98rem; line-height: 1.5; color: var(--ink);
+  background: var(--surface); border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm); padding: 10px 12px; width: 100%;
+  resize: vertical; min-height: 60px;
+}
+.task-note-edit:focus-visible { border-color: var(--accent); box-shadow: var(--focus); outline: none; }

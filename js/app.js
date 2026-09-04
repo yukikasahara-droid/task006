@@ -26,6 +26,10 @@
   const catList       = $('#catList');
   const catForm       = $('#catForm');
   const newCatInput   = $('#newCatInput');
+  const noteToggle    = $('#noteToggle');
+  const noteField     = $('#noteField');
+  const noteInput     = $('#noteInput');
+  const listHeading   = $('#list-heading');
 
   // スクリーンリーダーに状況を伝える（例：「追加しました」）
   function announce(msg) { liveRegion.textContent = msg; }
@@ -92,7 +96,11 @@
     checkbox.checked = task.done;
     checkbox.addEventListener('change', () => toggleDone(task.id, checkbox.checked));
 
-    // 本文（label にしてチェックボックスと関連付け → タップ範囲も広がる）
+    // 本文のまとまり（タイトル・メタ・備考をタテに並べる箱）
+    const body = document.createElement('div');
+    body.className = 'task-body';
+
+    // タイトルとメタ（label にしてチェックボックスと関連付け → タップ範囲も広がる）
     const label = document.createElement('label');
     label.className = 'task-main';
     label.setAttribute('for', cbId);
@@ -121,6 +129,57 @@
     meta.appendChild(due);
     label.appendChild(title);
     label.appendChild(meta);
+    body.appendChild(label);
+
+    // 備考の表示（書いてあるときだけ出す）
+    if (task.note) {
+      const noteView = document.createElement('p');
+      noteView.className = 'task-note';
+      noteView.textContent = task.note;
+      body.appendChild(noteView);
+    }
+
+    // 備考の編集欄（ふだんは隠しておき、「備考」ボタンで開く）
+    const noteEdit = document.createElement('textarea');
+    noteEdit.className = 'task-note-edit';
+    noteEdit.id = 'note-edit-' + task.id;
+    noteEdit.rows = 2;
+    noteEdit.value = task.note || '';
+    noteEdit.placeholder = '備考を入力（自動で保存されます）';
+    noteEdit.setAttribute('aria-label', `「${task.title}」の備考`);
+    noteEdit.hidden = true;
+    noteEdit.addEventListener('input', () => {
+      const cur = tasks.find(x => x.id === task.id);
+      if (!cur) return;
+      cur.note = noteEdit.value;   // 打つそばから保存
+      S.saveTasks(tasks);
+    });
+    body.appendChild(noteEdit);
+
+    // 右側の操作ボタン（備考・削除）
+    const actions = document.createElement('div');
+    actions.className = 'task-actions';
+
+    // 備考ボタン：ある→「備考」、ない→「＋備考」。押すと編集欄を開閉
+    const noteBtn = document.createElement('button');
+    noteBtn.type = 'button';
+    noteBtn.className = 'task-note-btn';
+    noteBtn.textContent = task.note ? '備考' : '＋備考';
+    noteBtn.setAttribute('aria-expanded', 'false');
+    noteBtn.setAttribute('aria-controls', noteEdit.id);
+    noteBtn.setAttribute('aria-label', (task.note ? '備考を編集' : '備考を追加') + `：「${task.title}」`);
+    noteBtn.addEventListener('click', () => {
+      const opening = noteEdit.hidden;
+      noteEdit.hidden = !opening;
+      noteBtn.setAttribute('aria-expanded', String(opening));
+      const shown = body.querySelector('.task-note');
+      if (opening) {
+        if (shown) shown.hidden = true;   // 表示中の備考は編集中は隠す
+        noteEdit.focus();
+      } else {
+        renderTasks();   // 閉じたら最新の内容を表示に反映（空なら消える）
+      }
+    });
 
     // 削除ボタン
     const del = document.createElement('button');
@@ -130,9 +189,12 @@
     del.setAttribute('aria-label', `「${task.title}」を削除`);
     del.addEventListener('click', () => deleteTask(task.id));
 
+    actions.appendChild(noteBtn);
+    actions.appendChild(del);
+
     li.appendChild(checkbox);
-    li.appendChild(label);
-    li.appendChild(del);
+    li.appendChild(body);
+    li.appendChild(actions);
     return li;
   }
 
@@ -172,10 +234,13 @@
       title,
       due: dueInput.value || '',
       category: categoryInput.value || categories[0],
-      done: false
+      done: false,
+      note: noteInput.value.trim()   // 備考（空でもOK）
     });
     S.saveTasks(tasks);
     titleInput.value = '';
+    noteInput.value = '';
+    collapseNoteField();   // 追加したら備考欄はまた閉じる
     renderTasks();
     announce(`タスク「${title}」を追加しました`);
     titleInput.focus();   // 続けて入力しやすいようフォーカスを戻す
@@ -196,7 +261,9 @@
     S.saveTasks(tasks);
     renderTasks();
     if (t) announce(`「${t.title}」を削除しました`);
-    titleInput.focus();   // フォーカスが行方不明にならないように
+    // 入力欄には戻さない（スマホでキーボードが出てしまうため）。
+    // 代わりに見出しへフォーカスを移し、操作位置を見失わないようにする。
+    listHeading.focus();
   }
 
   function addCategory(e) {
@@ -230,6 +297,20 @@
     announce(`ジャンル「${cat}」を削除しました`);
   }
 
+  /* ============ 追加フォームの「備考」開閉 ============ */
+  function toggleNoteField() {
+    const willOpen = noteField.hidden;
+    noteField.hidden = !willOpen;
+    noteToggle.setAttribute('aria-expanded', String(willOpen));
+    noteToggle.textContent = willOpen ? '－ 備考を閉じる' : '＋ 備考（任意）';
+    if (willOpen) noteInput.focus();
+  }
+  function collapseNoteField() {
+    noteField.hidden = true;
+    noteToggle.setAttribute('aria-expanded', 'false');
+    noteToggle.textContent = '＋ 備考（任意）';
+  }
+
   /* ============ ジャンル管理ダイアログ ============ */
   function openDialog() {
     renderCatList();
@@ -251,6 +332,7 @@
 
     addForm.addEventListener('submit', addTask);
     catForm.addEventListener('submit', addCategory);
+    noteToggle.addEventListener('click', toggleNoteField);
     $('#manageCategoriesBtn').addEventListener('click', openDialog);
     $('#catCloseBtn').addEventListener('click', closeDialog);
   }

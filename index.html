@@ -16,7 +16,7 @@
 
   <div class="app">
     <header class="app-header">
-      <h1 class="app-title">クイックタスク</h1>
+      <h1 class="app-title"><span class="title-full">クイックタスク</span><span class="title-short">TASK</span></h1>
       <button type="button" class="btn-ghost" id="manageCategoriesBtn" aria-haspopup="dialog">ジャンル管理</button>
     </header>
 
@@ -31,6 +31,18 @@
                    placeholder="例：企画書を提出する" required aria-describedby="titleHint">
             <p id="titleHint" class="field-hint">Enterキーでも追加できます</p>
           </div>
+
+          <!-- 備考（任意）：ふだんは閉じておき、必要なときだけ開いて書く -->
+          <div class="field field-note-toggle">
+            <button type="button" id="noteToggle" class="btn-note-toggle"
+                    aria-expanded="false" aria-controls="noteField">＋ 備考（任意）</button>
+          </div>
+          <div class="field" id="noteField" hidden>
+            <label for="noteInput" class="field-label">備考（任意）</label>
+            <textarea id="noteInput" name="note" class="input input-note" rows="2"
+                      placeholder="詳細メモがあれば記入（あとから追加・編集もできます）"></textarea>
+          </div>
+
           <div class="add-form-row">
             <div class="field">
               <label for="dueInput" class="field-label">納期</label>
@@ -54,7 +66,7 @@
 
       <!-- 一覧の見出しと件数 -->
       <div class="list-head">
-        <h2 class="section-label" id="list-heading">タスク一覧</h2>
+        <h2 class="section-label" id="list-heading" tabindex="-1">タスク一覧</h2>
         <span class="count" id="taskCount"></span>
       </div>
 

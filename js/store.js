@@ -54,10 +54,10 @@ window.TaskStore = (function () {
   function seedTasks() {
     const t = todayStr();
     return [
-      { id: newId(), title: '資料を印刷しておく', due: addDaysStr(t, -2), category: '仕事', done: false },
-      { id: newId(), title: '企画書を提出する',   due: addDaysStr(t, 1),  category: '仕事', done: false },
-      { id: newId(), title: '歯医者を予約する',   due: addDaysStr(t, 4),  category: 'プライベート', done: false },
-      { id: newId(), title: '参考書を1章読む',    due: '',                category: '学習', done: false }
+      { id: newId(), title: '資料を印刷しておく', due: addDaysStr(t, -2), category: '仕事', done: false, note: '' },
+      { id: newId(), title: '企画書を提出する',   due: addDaysStr(t, 1),  category: '仕事', done: false, note: 'A4で3部。表紙に日付を入れる。（← これが備考の表示例です）' },
+      { id: newId(), title: '歯医者を予約する',   due: addDaysStr(t, 4),  category: 'プライベート', done: false, note: '' },
+      { id: newId(), title: '参考書を1章読む',    due: '',                category: '学習', done: false, note: '' }
     ];
   }
 
