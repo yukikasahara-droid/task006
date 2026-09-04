@@ -335,6 +335,14 @@
     noteToggle.addEventListener('click', toggleNoteField);
     $('#manageCategoriesBtn').addEventListener('click', openDialog);
     $('#catCloseBtn').addEventListener('click', closeDialog);
+
+    // ページを開いたら、すぐ入力できるよう「やること」入力欄に着地させる。
+    // （下部のフォームまで自分でスクロールしなくてよいように）
+    // レイアウト確定後に実行するため requestAnimationFrame を使う。
+    requestAnimationFrame(() => {
+      titleInput.focus({ preventScroll: true });
+      titleInput.scrollIntoView({ block: 'center' });
+    });
   }
 
   // 読み込みタイミングに関わらず確実に起動する
