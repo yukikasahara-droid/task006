@@ -87,23 +87,42 @@
     const info = S.dueInfo(task.due);
     if (info.state === 'overdue' && !task.done) li.classList.add('is-overdue');
 
-    // チェックボックス（完了トグル）
+    // チェックボックス（完了の切り替えはここだけ。左上の□。誤タップ防止）
     const cbId = 'cb-' + task.id;
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.className = 'task-check';
     checkbox.id = cbId;
     checkbox.checked = task.done;
+    checkbox.setAttribute('aria-label', `「${task.title}」を完了にする`);
     checkbox.addEventListener('change', () => toggleDone(task.id, checkbox.checked));
 
     // 本文のまとまり（タイトル・メタ・備考をタテに並べる箱）
     const body = document.createElement('div');
     body.className = 'task-body';
 
-    // タイトルとメタ（label にしてチェックボックスと関連付け → タップ範囲も広がる）
-    const label = document.createElement('label');
-    label.className = 'task-main';
-    label.setAttribute('for', cbId);
+    // 備考の編集欄（ふだんは隠す。タイトルをタップすると開く）
+    const noteEdit = document.createElement('textarea');
+    noteEdit.className = 'task-note-edit';
+    noteEdit.id = 'note-edit-' + task.id;
+    noteEdit.rows = 2;
+    noteEdit.value = task.note || '';
+    noteEdit.placeholder = '備考を入力（自動で保存されます）';
+    noteEdit.setAttribute('aria-label', `「${task.title}」の備考`);
+    noteEdit.hidden = true;
+    noteEdit.addEventListener('input', () => {
+      const cur = tasks.find(x => x.id === task.id);
+      if (!cur) return;
+      cur.note = noteEdit.value;   // 打つそばから保存
+      S.saveTasks(tasks);
+    });
+
+    // タイトル部分はボタン。タップで備考の編集を開閉（完了はしない）
+    const main = document.createElement('button');
+    main.type = 'button';
+    main.className = 'task-main';
+    main.setAttribute('aria-expanded', 'false');
+    main.setAttribute('aria-controls', noteEdit.id);
 
     const title = document.createElement('span');
     title.className = 'task-title';
@@ -127,69 +146,50 @@
 
     meta.appendChild(chip);
     meta.appendChild(due);
-    label.appendChild(title);
-    label.appendChild(meta);
-    body.appendChild(label);
+    main.appendChild(title);
+    main.appendChild(meta);
 
-    // 備考の表示（書いてあるときだけ出す）
+    // 備考の表示（書いてあるときだけ）
     if (task.note) {
-      const noteView = document.createElement('p');
+      const noteView = document.createElement('span');
       noteView.className = 'task-note';
       noteView.textContent = task.note;
-      body.appendChild(noteView);
+      main.appendChild(noteView);
     }
 
-    // 備考の編集欄（ふだんは隠しておき、「備考」ボタンで開く）
-    const noteEdit = document.createElement('textarea');
-    noteEdit.className = 'task-note-edit';
-    noteEdit.id = 'note-edit-' + task.id;
-    noteEdit.rows = 2;
-    noteEdit.value = task.note || '';
-    noteEdit.placeholder = '備考を入力（自動で保存されます）';
-    noteEdit.setAttribute('aria-label', `「${task.title}」の備考`);
-    noteEdit.hidden = true;
-    noteEdit.addEventListener('input', () => {
-      const cur = tasks.find(x => x.id === task.id);
-      if (!cur) return;
-      cur.note = noteEdit.value;   // 打つそばから保存
-      S.saveTasks(tasks);
-    });
-    body.appendChild(noteEdit);
+    // ヒント（タイトルタップで備考を編集/追加できることを伝える）
+    const hint = document.createElement('span');
+    hint.className = 'note-hint';
+    hint.textContent = task.note ? '✎ タップで備考を編集' : '✎ タップで備考メモを追加';
+    main.appendChild(hint);
 
-    // 右側の操作ボタン（備考・削除）
-    const actions = document.createElement('div');
-    actions.className = 'task-actions';
-
-    // 備考ボタン：ある→「備考」、ない→「＋備考」。押すと編集欄を開閉
-    const noteBtn = document.createElement('button');
-    noteBtn.type = 'button';
-    noteBtn.className = 'task-note-btn';
-    noteBtn.textContent = task.note ? '備考' : '＋備考';
-    noteBtn.setAttribute('aria-expanded', 'false');
-    noteBtn.setAttribute('aria-controls', noteEdit.id);
-    noteBtn.setAttribute('aria-label', (task.note ? '備考を編集' : '備考を追加') + `：「${task.title}」`);
-    noteBtn.addEventListener('click', () => {
+    // タイトルタップ → 備考の編集欄を開閉
+    main.addEventListener('click', () => {
       const opening = noteEdit.hidden;
       noteEdit.hidden = !opening;
-      noteBtn.setAttribute('aria-expanded', String(opening));
-      const shown = body.querySelector('.task-note');
+      main.setAttribute('aria-expanded', String(opening));
+      const nv = main.querySelector('.task-note');
+      if (nv) nv.hidden = opening;   // 編集中は表示用の備考を隠す
+      hint.hidden = opening;
       if (opening) {
-        if (shown) shown.hidden = true;   // 表示中の備考は編集中は隠す
         noteEdit.focus();
       } else {
-        renderTasks();   // 閉じたら最新の内容を表示に反映（空なら消える）
+        renderTasks();   // 閉じたら最新の内容を反映（空なら消える）
       }
     });
 
-    // 削除ボタン
+    body.appendChild(main);
+    body.appendChild(noteEdit);
+
+    // 右側の操作（削除のみ）
+    const actions = document.createElement('div');
+    actions.className = 'task-actions';
     const del = document.createElement('button');
     del.type = 'button';
     del.className = 'task-delete';
     del.textContent = '削除';
     del.setAttribute('aria-label', `「${task.title}」を削除`);
     del.addEventListener('click', () => deleteTask(task.id));
-
-    actions.appendChild(noteBtn);
     actions.appendChild(del);
 
     li.appendChild(checkbox);

@@ -21,7 +21,22 @@
     </header>
 
     <main id="main">
-      <!-- 追加フォーム -->
+      <!-- ジャンル絞り込み（画面の上側：登録済みタスクを見やすく） -->
+      <nav class="filters" aria-label="ジャンルで絞り込み">
+        <div class="filters-scroll" id="filterTabs" role="group" aria-label="ジャンル"></div>
+      </nav>
+
+      <!-- 一覧の見出しと件数 -->
+      <div class="list-head">
+        <h2 class="section-label" id="list-heading" tabindex="-1">タスク一覧</h2>
+        <span class="count" id="taskCount"></span>
+      </div>
+
+      <!-- タスク一覧（中身はJSで生成）-->
+      <ul class="task-list" id="taskList" aria-labelledby="list-heading"></ul>
+      <p class="empty" id="emptyState" hidden>該当するタスクはありません</p>
+
+      <!-- 追加フォーム（親指で届きやすいよう画面の下側に配置） -->
       <section class="card add-card" aria-labelledby="add-heading">
         <h2 id="add-heading" class="section-label">新しいタスクを追加</h2>
         <form id="addForm" class="add-form" autocomplete="off">
@@ -58,21 +73,6 @@
           </div>
         </form>
       </section>
-
-      <!-- ジャンル絞り込み -->
-      <nav class="filters" aria-label="ジャンルで絞り込み">
-        <div class="filters-scroll" id="filterTabs" role="group" aria-label="ジャンル"></div>
-      </nav>
-
-      <!-- 一覧の見出しと件数 -->
-      <div class="list-head">
-        <h2 class="section-label" id="list-heading" tabindex="-1">タスク一覧</h2>
-        <span class="count" id="taskCount"></span>
-      </div>
-
-      <!-- タスク一覧（中身はJSで生成）-->
-      <ul class="task-list" id="taskList" aria-labelledby="list-heading"></ul>
-      <p class="empty" id="emptyState" hidden>該当するタスクはありません</p>
     </main>
 
     <!-- 画面には出さない、読み上げ専用の状況通知 -->
